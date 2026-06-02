@@ -480,7 +480,6 @@ async function loadData() {
       const meta = SERVICE_NAMES[svc.slug] || { name: svc.name, desc: svc.url };
       const history = await fetchHistory(svc.slug);
       const bars90 = buildBars(history, 90);
-      const bars24 = buildBars(history, 1);
       const uptime90 = parseFloat(svc.uptimeMonth || svc.uptime || '0').toFixed(2);
       const uptime24 = parseFloat(svc.uptimeDay || '0').toFixed(2);
       const time = svc.time ? `${svc.time} ms` : '—';
@@ -508,14 +507,6 @@ async function loadData() {
             <span>сегодня</span>
           </div>
         </div>` : ''}
-        ${bars24 ? `<div class="bars-wrap" style="margin-top:.4rem">
-          <div class="bars-track" style="grid-template-columns:repeat(24,1fr)">${bars24}</div>
-          <div class="bars-axis">
-            <span>24 часа назад</span>
-            <span class="bars-axis-line"></span>
-            <span>сейчас</span>
-          </div>
-        </div>` : ''}`;
       container.appendChild(div);
     }
 
