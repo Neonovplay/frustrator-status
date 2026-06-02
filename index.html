@@ -417,10 +417,10 @@ function parseYmlHistory(text) {
   return entries;
 }
 
-function buildBars(history) {
+function buildBars(history, days) {
   const today = new Date();
   const bars = [];
-  for (let i = 89; i >= 0; i--) {
+  for (let i = days - 1; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().slice(0, 10);
@@ -473,17 +473,17 @@ async function loadData() {
         <div class="overall-meta">обновлено ${new Date().toLocaleTimeString('ru', {hour:'2-digit',minute:'2-digit'})} · автообновление каждые 60 сек</div>
       </div>`;
 
-    // Services
+// Services
     const container = document.getElementById('services');
     container.innerHTML = '';
-
     for (const svc of data) {
       const meta = SERVICE_NAMES[svc.slug] || { name: svc.name, desc: svc.url };
       const history = await fetchHistory(svc.slug);
-      const bars = buildBars(history);
-      const uptime = parseFloat(svc.uptimeMonth || svc.uptime || '0').toFixed(2);
+      const bars90 = buildBars(history, 90);
+      const bars24 = buildBars(history, 1);
+      const uptime90 = parseFloat(svc.uptimeMonth || svc.uptime || '0').toFixed(2);
+      const uptime24 = parseFloat(svc.uptimeDay || '0').toFixed(2);
       const time = svc.time ? `${svc.time} ms` : '—';
-
       const div = document.createElement('article');
       div.className = 'service ' + statusClass(svc.status);
       div.innerHTML = `
@@ -495,16 +495,25 @@ async function loadData() {
           </div>
           <div class="svc-meta">
             <div class="svc-status">${statusLabel(svc.status)}</div>
-            <div class="svc-uptime">uptime ${uptime}%</div>
+            <div class="svc-uptime">uptime ${uptime24}% / 24ч</div>
+            <div class="svc-uptime">uptime ${uptime90}% / 90д</div>
             <div class="svc-time">${time}</div>
           </div>
         </div>
-        ${bars ? `<div class="bars-wrap">
-          <div class="bars-track">${bars}</div>
+        ${bars90 ? `<div class="bars-wrap">
+          <div class="bars-track">${bars90}</div>
           <div class="bars-axis">
             <span>90 дней назад</span>
             <span class="bars-axis-line"></span>
             <span>сегодня</span>
+          </div>
+        </div>` : ''}
+        ${bars24 ? `<div class="bars-wrap" style="margin-top:.4rem">
+          <div class="bars-track" style="grid-template-columns:repeat(24,1fr)">${bars24}</div>
+          <div class="bars-axis">
+            <span>24 часа назад</span>
+            <span class="bars-axis-line"></span>
+            <span>сейчас</span>
           </div>
         </div>` : ''}`;
       container.appendChild(div);
